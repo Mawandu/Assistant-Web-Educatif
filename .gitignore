@@ -1,0 +1,9 @@
+# Environnement virtuel
+venv/
+
+# Fichiers cache Python
+__pycache__/
+*.pyc
+
+# Fichiers de données (ne pas versionner les PDFs ou la DB)
+data/
