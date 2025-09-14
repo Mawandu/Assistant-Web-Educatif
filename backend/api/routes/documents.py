@@ -1,46 +1,64 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
 from sqlalchemy.orm import Session
+import aiofiles
+import os
+
 from backend.models.document import Document
 from backend.api.dependencies import get_db
-from backend.services.document_processor import extract_text_from_pdf, split_text_into_chunks
+# MODIFIÉ: Importe la nouvelle fonction extract_pages_from_pdf
+from backend.services.document_processor import extract_pages_from_pdf, split_text_into_chunks
 from backend.services.vector_store import VectorStore
 
 router = APIRouter()
 
-@router.post("/documents")
-def create_document(file_name: str, subject: str, level: str, db: Session = Depends(get_db)):
+UPLOAD_DIRECTORY = "data/documents"
+os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
-    new_document = Document(file_name=file_name, subject=subject, level=level)
+@router.post("/documents")
+async def create_and_process_document(
+    db: Session = Depends(get_db),
+    subject: str = Form(...),
+    level: str = Form(...),
+    file: UploadFile = File(...)
+):
+    file_path = os.path.join(UPLOAD_DIRECTORY, file.filename)
+    try:
+        async with aiofiles.open(file_path, 'wb') as out_file:
+            content = await file.read()
+            await out_file.write(content)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la sauvegarde du fichier : {e}")
+
+    new_document = Document(file_name=file.filename, subject=subject, level=level)
     db.add(new_document)
     db.commit()
     db.refresh(new_document)
-    return new_document
 
-@router.get("/documents")
-def get_all_documents(db: Session = Depends(get_db)):
-
-    documents = db.query(Document).all()
-    return documents
-
-@router.get("/documents/{doc_id}/process")
-def process_document_text(doc_id: int, db: Session = Depends(get_db)):
-    document = db.query(Document).filter(Document.id == doc_id).first()
-    if not document:
-        return {"error": "Document non trouvé"}
-
-    file_path = f"data/{document.file_name}"
-    text = extract_text_from_pdf(file_path)
-    chunks = split_text_into_chunks(text)
+    try:
+        # MODIFIÉ: Utilise les nouvelles fonctions pour le traitement
+        pages = extract_pages_from_pdf(file_path)
+        chunks = split_text_into_chunks(pages)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Erreur lors de l'extraction du texte du PDF : {e}")
 
     try:
         vector_store = VectorStore()
-        vector_store.add_document_chunks(doc_id=doc_id, chunks=chunks)
-
-        return {
-            "document_id": doc_id,
-            "file_name": document.file_name,
-            "status": "Traitement et vectorisation réussis.",
-            "total_chunks_added": len(chunks)
-        }
+        vector_store.add_document_chunks(doc_id=new_document.id, chunks=chunks)
     except Exception as e:
-        return {"error": f"Erreur lors de la vectorisation : {e}"}
+        raise HTTPException(status_code=500, detail=f"Erreur lors de la vectorisation : {e}")
+
+    return {
+        "message": "Document téléversé et traité avec succès !",
+        "document_details": {
+            "id": new_document.id,
+            "file_name": new_document.file_name,
+            "subject": new_document.subject,
+            "level": new_document.level,
+            "chunks_added": len(chunks)
+        }
+    }
+
+@router.get("/documents")
+def get_all_documents(db: Session = Depends(get_db)):
+    documents = db.query(Document).all()
+    return documents
