@@ -8,7 +8,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
 
     # Base de données (PostgreSQL)
-    DATABASE_URL: str = "postgresql://postgres:postgres@localhost/assistantWed_db"
+    DATABASE_URL: str = "postgresql://postgres:postgres@postgres/assistantWed_db"
 
     class Config:
         case_sensitive = True

@@ -1,58 +1,66 @@
-# Assistant Web Éducatif - API Backend
+# Assistant Web Éducatif - Full Stack
 
-Ce dépôt contient le code source du backend pour l'Assistant Web Éducatif. C'est une API développée en Python avec FastAPI qui fournit la logique pour traiter des documents et répondre à des questions en utilisant un modèle de langage local.
+Ce dépôt contient le code source complet de l'Assistant Web Éducatif, une application full stack conçue pour aider les étudiants en chimie. Le système analyse des manuels PDF, permet de poser des questions en langage naturel et fournit des réponses sourcées grâce à un modèle de langage local.
 
-## État Actuel
+## Fonctionnalités Principales ✨
+-   **API Backend Robuste** : Construite avec FastAPI, elle gère la logique de traitement des documents, l'authentification des utilisateurs et la génération des réponses.
+-   **Interface Frontend Interactive** : Développée avec React (Vite), elle offre une interface de chat pour les étudiants et un panneau d'administration pour les enseignants.
+-   **Gestion des Utilisateurs** : Système d'authentification complet avec des rôles (étudiant, enseignant) pour sécuriser l'application.
+-   **IA Locale et Privée** : Utilise Ollama pour faire tourner des modèles de langage localement, garantissant la confidentialité des données.
+-   **Déploiement Simplifié** : L'ensemble de l'application (backend, frontend, base de données, IA) peut être lancé avec une seule commande grâce à Docker Compose.
 
-Le projet est une base fonctionnelle qui inclut :
--   Une API pour la gestion des métadonnées de documents (créer, lister).
--   Une chaîne de traitement complète pour les fichiers PDF : extraction de texte, découpage, et vectorisation.
--   Un endpoint de questions-réponses qui interroge une base de données vectorielle et génère des réponses avec un LLM via Ollama.
+## Stack Technique 🛠️
+-   **Backend** : Python, FastAPI, SQLAlchemy
+-   **Frontend** : JavaScript, React, Vite
+-   **Base de données (Métadonnées)** : PostgreSQL
+-   **Base de données (Vecteurs)** : ChromaDB
+-   **Modèles de Langage (LLM)** : Ollama
+-   **Conteneurisation** : Docker & Docker Compose
 
-## Stack Technique
+## Démarrage Rapide (Méthode Recommandée) 🚀
 
--   **Framework API :** FastAPI
--   **Base de données (Métadonnées) :** PostgreSQL (lancé avec Docker)
--   **Base de données (Vecteurs) :** ChromaDB
--   **Modèles de Langage (LLM) :** Ollama (avec le modèle Mistral)
--   **Traitement de texte & Vectorisation :** LangChain, Sentence-Transformers, PyMuPDF
--   **ORM :** SQLAlchemy
+Cette méthode lance tous les services nécessaires avec une seule commande.
 
-## Démarrage Rapide
+1.  **Prérequis** : Assurez-vous d'avoir **Docker** et **Docker Compose** installés. Si vous avez une carte graphique NVIDIA, installez également les drivers appropriés et le NVIDIA Container Toolkit.
 
-1.  **Prérequis :** Assurez-vous d'avoir Python 3.9+, Docker et Ollama installés.
-
-2.  **Clonez le dépôt :**
+2.  **Clonez le dépôt** :
     ```bash
     git clone [https://github.com/Mawandu/Assistant-Web-Educatif.git](https://github.com/Mawandu/Assistant-Web-Educatif.git)
     cd Assistant-Web-Educatif
     ```
 
-3.  **Installez les dépendances Python :**
+3.  **Lancez l'application** :
+    Cette commande va construire les images et démarrer tous les conteneurs.
     ```bash
-    python -m venv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+    docker-compose up --build -d
     ```
 
-4.  **Lancez les services externes :**
-    - **PostgreSQL :**
-      ```bash
-      docker run -d --name postgres-assistantWed -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=assistantWed_db -p 5432:5432 postgres:13
-      ```
-    - **Ollama :** (dans un autre terminal)
-      ```bash
-      ollama pull mistral
-      ollama serve
-      ```
+4.  **Configurez les modèles d'IA** (la première fois seulement) :
+    * Pendant que l'application tourne, ouvrez un nouveau terminal pour télécharger un modèle d'IA.
+    * Lancez l'une des commandes suivantes :
+        ```bash
+        # Recommandé si vous avez peu de RAM (< 8Go)
+        docker-compose exec ollama ollama pull tinyllama
 
-5.  **Initialisez la base de données :**
-    ```bash
-    python -m scripts.init_db
-    ```
+        # Recommandé si vous avez plus de RAM (> 8Go)
+        docker-compose exec ollama ollama pull mistral
+        ```
+    * **Important** : Assurez-vous que le nom du modèle que vous téléchargez correspond à celui utilisé dans votre code (`backend/services/ollama_client.py`).
 
-6.  **Lancez le serveur API :**
-    ```bash
-    uvicorn backend.main:app --reload
-    ```
-L'API est maintenant accessible à `http://127.0.0.1:8000` et la documentation interactive à `http://127.0.0.1:8000/docs`.
+5.  **Initialisation du premier utilisateur** (la première fois seulement) :
+    * L'application est lancée mais la base de données est vide. Suivez ces étapes pour créer un compte enseignant.
+    * **a. Créez les tables dans la base de données :**
+        ```bash
+        docker-compose exec backend python -m scripts.init_db
+        ```
+    * **b. Créez le compte utilisateur via l'API :**
+        * Allez sur `http://localhost:8000/docs`.
+        * Utilisez l'endpoint `POST /api/v1/users` pour créer un utilisateur (ex: `prof@test.com` avec un mot de passe).
+    * **c. Donnez-lui le rôle "enseignant" :**
+        ```bash
+        docker-compose exec backend python -m scripts.set_user_role prof@test.com enseignant
+        ```
+
+Votre application est maintenant entièrement configurée et accessible :
+-   **Frontend (Interface Utilisateur)** : `http://localhost:5173/`
+-   **Backend (API Docs)** : `http://localhost:8000/docs`

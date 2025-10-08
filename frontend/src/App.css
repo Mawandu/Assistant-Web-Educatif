@@ -1,0 +1,103 @@
+/* frontend/src/App.css */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    margin: 0;
+    background-color: #f4f4f8;
+}
+
+.app-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    height: 90vh;
+}
+
+.app-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.chat-window {
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.message {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+}
+.message.user {
+    align-items: flex-end;
+}
+.message.bot {
+    align-items: flex-start;
+}
+.message p {
+    max-width: 70%;
+    padding: 10px 15px;
+    border-radius: 18px;
+    margin: 0;
+}
+.message.user p {
+    background-color: #007bff;
+    color: white;
+}
+.message.bot p {
+    background-color: #e9e9eb;
+    color: black;
+}
+
+.loading-indicator {
+    text-align: center;
+    color: #888;
+    font-style: italic;
+}
+
+.chat-form {
+    display: flex;
+    padding: 20px;
+    border-top: 1px solid #eee;
+}
+.chat-form input {
+    flex-grow: 1;
+    border: 1px solid #ccc;
+    border-radius: 20px;
+    padding: 10px 15px;
+    font-size: 1em;
+}
+.chat-form button {
+    margin-left: 10px;
+    border: none;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+.chat-form button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+/* frontend/src/App.css */
+.feedback-buttons {
+    margin-top: 8px;
+}
+.feedback-buttons button {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-right: 5px;
+    width: 30px;
+    height: 30px;
+}
+.feedback-buttons button:hover {
+    background-color: #f0f0f0;
+}

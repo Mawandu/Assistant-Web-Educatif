@@ -1,31 +1,37 @@
+# backend/services/ollama_client.py
 import requests
 import json
+import os
 
-def generate_response(question: str, context: list[str]):
+OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+
+def generate_response(question: str, context: str) -> str:
     """
-    Sends the question and context to the Ollama model and gets a response.
+    Génère une réponse en utilisant Ollama avec un contexte.
     """
     prompt = f"""
     En te basant uniquement sur le contexte suivant, réponds à la question.
-    Si la réponse ne se trouve pas dans le contexte, dis "Je ne sais pas".
-
-    Contexte:
-    {" ".join(context)}
-
-    Question: {question}
+    Contexte :
+    ---
+    {context}
+    ---
+    Question : {question}
     """
-
+    
     try:
         response = requests.post(
-            "http://localhost:11434/api/generate",
+            f"{OLLAMA_HOST}/api/generate",
             json={
-                "model": "mistral",
+                "model": "mistral", 
                 "prompt": prompt,
                 "stream": False
-            }
+            },
+            timeout=60
         )
         response.raise_for_status()
-        return json.loads(response.text).get("response", "")
-    except requests.RequestException as e:
+        full_response = response.text.strip().split('\n')[-1]
+        return json.loads(full_response).get("response", "Aucune réponse générée.")
+
+    except requests.exceptions.RequestException as e:
         print(f"Error calling Ollama: {e}")
         return "Désolé, une erreur est survenue lors de la génération de la réponse."

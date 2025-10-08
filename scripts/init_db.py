@@ -1,5 +1,6 @@
 from backend.config.database import Base, engine
 from backend.models import document
+from backend.models import user
 
 def init_db():
     print("Création des tables de la base de données...")

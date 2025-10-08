@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
 from sqlalchemy.orm import Session
 import aiofiles
 import os
 
 from backend.models.document import Document
 from backend.api.dependencies import get_db
-# MODIFIÉ: Importe la nouvelle fonction extract_pages_from_pdf
 from backend.services.document_processor import extract_pages_from_pdf, split_text_into_chunks
 from backend.services.vector_store import VectorStore
+from backend.models.user import User as UserModel, RoleEnum
+from backend.api.dependencies import get_current_user
+
 
 router = APIRouter()
 
@@ -19,8 +21,14 @@ async def create_and_process_document(
     db: Session = Depends(get_db),
     subject: str = Form(...),
     level: str = Form(...),
-    file: UploadFile = File(...)
-):
+    file: UploadFile = File(...),
+    current_user: UserModel = Depends(get_current_user)
+):  
+    if current_user.role not in [RoleEnum.teacher, RoleEnum.admin]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Action non autorisée. Seuls les enseignants et administrateurs peuvent ajouter des documents."
+        )
     file_path = os.path.join(UPLOAD_DIRECTORY, file.filename)
     try:
         async with aiofiles.open(file_path, 'wb') as out_file:

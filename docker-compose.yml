@@ -1,0 +1,60 @@
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: assistantWed_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+  
+ 
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis_data:/data
+  
+  
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile 
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data 
+    environment:
+      REDIS_URL: redis://redis:6379/0
+      DATABASE_URL: postgresql://postgres:postgres@postgres/assistantWed_db
+      OLLAMA_HOST: http://ollama:11434
+    depends_on:
+      - postgres
+      - ollama
+      - redis
+  
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "5173:80" 
+    depends_on:
+      - backend
+volumes:
+  postgres_data:
+  ollama_data:
+  redis_data:
