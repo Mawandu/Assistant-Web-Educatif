@@ -3,12 +3,12 @@ from sqlalchemy.orm import Session
 import aiofiles
 import os
 
-from backend.models.document import Document
-from backend.api.dependencies import get_db
-from backend.services.document_processor import extract_pages_from_pdf, split_text_into_chunks
-from backend.services.vector_store import VectorStore
-from backend.models.user import User as UserModel, RoleEnum
-from backend.api.dependencies import get_current_user
+from models.document import Document
+from api.dependencies import get_db
+from services.document_processor import extract_pages_from_pdf, split_text_into_chunks
+from services.vector_store import VectorStore
+from models.user import User as UserModel, RoleEnum
+from api.dependencies import get_current_user
 
 
 router = APIRouter()

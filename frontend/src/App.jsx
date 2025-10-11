@@ -15,6 +15,18 @@ function App() {
       return;
     }
     try {
+      let questionText = '';
+      const messageIndex = messages.indexOf(message);
+      for (let i = messageIndex - 1; i >= 0; i--) {
+        if (messages[i].sender === 'user') {
+          questionText = messages[i].text;
+          break;
+        }
+      }
+      if (!questionText) {
+        alert("Impossible de trouver la question originale.");
+        return;
+      }
       await fetch('http://localhost:8000/api/v1/feedback', {
         method: 'POST',
         headers: {
@@ -22,7 +34,7 @@ function App() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          question: messages[messages.indexOf(message) - 1].text, // Trouve la question précédente
+          question: questionText,
           answer: message.text,
           rating: rating
         })
@@ -44,13 +56,10 @@ function App() {
     setPrompt('');
     setIsLoading(true);
 
-    // --- NOUVEAU : Appel à l'API Backend ---
     try {
       const response = await fetch('http://localhost:8000/api/v1/ask', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ question: currentPrompt }),
       });
 
@@ -60,10 +69,10 @@ function App() {
 
       const data = await response.json();
 
-      const apiResponse = { 
-        sender: 'bot', 
+      const apiResponse = {
+        sender: 'bot',
         text: data.answer,
-        sources: data.sources // On sauvegarde les sources
+        sources: data.sources
       };
       setMessages(prev => [...prev, apiResponse]);
 
@@ -77,34 +86,34 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-    // --- FIN DU NOUVEAU BLOC ---
   };
 
   return (
     <div className="app-container">
       <header className="app-header">
-        <h1>Assistant Web Educatif</h1>
+        <h1>Assistant Web Éducatif</h1>
       </header>
 
       <div className="chat-window">
         {messages.map((msg, index) => (
           <div key={index} className={`message ${msg.sender}`}>
             <p>{msg.text}</p>
-            {/* Affiche les sources si elles existent */}
-            {msg.sender === 'bot' && msg.sources && (
+            
+            {msg.sender === 'bot' && msg.sources && msg.sources.length > 0 && (
               <div className="sources">
                 <strong>Sources:</strong>
                 <ul>
                   {msg.sources.map((source, i) => (
                     <li key={i}>
-                      Document ID: {source.document_id}, Page: {source.page}
+                      {/* LIGNE CORRIGÉE CI-DESSOUS */}
+                      {source.document}, Page: {source.page}
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-            {/* boutons de feedback pour les messages du bot */}
-            {msg.sender === 'bot' && !msg.sources && (
+
+            {msg.sender === 'bot' && msg.text !== "Désolé, une erreur est survenue. Veuillez réessayer." && (
               <div className="feedback-buttons">
                 <button onClick={() => handleFeedback(msg, 1)}>👍</button>
                 <button onClick={() => handleFeedback(msg, -1)}>👎</button>
@@ -120,7 +129,7 @@ function App() {
           type="text"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Posez votre question ..."
+          placeholder="Posez votre question..."
           disabled={isLoading}
         />
         <button type="submit" disabled={isLoading}>Envoyer</button>

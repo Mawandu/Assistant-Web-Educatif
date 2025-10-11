@@ -1,8 +1,8 @@
 # scripts/set_user_role.py
 import sys
 from sqlalchemy.orm import Session
-from backend.config.database import SessionLocal
-from backend.models.user import User, RoleEnum
+from config.database import SessionLocal
+from models.user import User, RoleEnum
 
 def set_user_role(email: str, role_input: str):
     db: Session = SessionLocal()

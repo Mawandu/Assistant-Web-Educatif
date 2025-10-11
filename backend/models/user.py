@@ -2,7 +2,7 @@
 
 import enum
 from sqlalchemy import Column, Integer, String, Enum
-from backend.config.database import Base
+from config.database import Base
 from pydantic import BaseModel
 
 

@@ -1,3 +1,4 @@
+# backend/config/settings.py
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -6,13 +7,14 @@ class Settings(BaseSettings):
     """
     PROJECT_NAME: str = "Assistant Web Éducatif"
     API_V1_STR: str = "/api/v1"
-
-    # Base de données (PostgreSQL)
+    
     DATABASE_URL: str = "postgresql://postgres:postgres@postgres/assistantWed_db"
-
+    
+    OLLAMA_HOST: str = "http://ollama:11434"
+    OLLAMA_MODEL: str = "tinyllama"
+    
     class Config:
         case_sensitive = True
-        # Permet de lire les variables depuis un fichier .env
         env_file = ".env"
 
 settings = Settings()

@@ -1,6 +1,6 @@
 # Assistant Web Éducatif - Full Stack
 
-Ce dépôt contient le code source complet de l'Assistant Web Éducatif, une application full stack conçue pour aider les étudiants en chimie. Le système analyse des manuels PDF, permet de poser des questions en langage naturel et fournit des réponses sourcées grâce à un modèle de langage local.
+Ce dépôt contient le code source complet de l'Assistant Web Éducatif, une application full stack conçue pour aider les étudiants dans un domaine spécifique. Le système analyse des manuels PDF, permet de poser des questions en langage naturel et fournit des réponses sourcées grâce à un modèle de langage local.
 
 ## Fonctionnalités Principales ✨
 -   **API Backend Robuste** : Construite avec FastAPI, elle gère la logique de traitement des documents, l'authentification des utilisateurs et la génération des réponses.
